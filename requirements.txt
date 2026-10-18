@@ -1,0 +1,6 @@
+# Python 依赖（ffmpeg / ffprobe 需另装并放进 PATH）
+edge-tts>=7.3.1        # 临时配音（旧版本会被服务器 403，要保持更新）
+numpy>=1.24            # 波形和响度分析
+yt-dlp>=2026.8.19      # 下载素材（过期就会被 YouTube 403，要保持更新）
+# 可选：换成正式配音后逐字对齐、给原声找词的时间（有 NVIDIA 显卡会快很多）
+# faster-whisper>=1.0
