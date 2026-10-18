@@ -3,9 +3,13 @@
 > 一个给 Claude Code 用的 Skill，用来做**华尔街式的财经 / 科技解读短片**：1–3 分钟，16:9，不需要真人出镜。
 > *A Claude Code skill for making Wall-Street-style finance / tech explainer videos (1–3 min, 16:9, no on-camera host): real news, real people and official footage as evidence; cut-outs of the people in the story stand in for a host (in front of giant type, backgrounds swapping behind them); a layered 2.5D stage — glass discs, big numbers, clean charts — where the camera, not the elements, does the moving; every shot picks up something from the previous one.*
 
+![示例片：《AI到底有多烧钱》](examples/ai-burn-money/sample.gif)
+
+*上图：示例片《AI到底有多烧钱》第六版（77 秒）压成的 GIF，没有声音。图里的实拍画面、人物抠像和新闻截图分属各自的版权方，出处见 [examples/ai-burn-money/CREDITS.md](examples/ai-burn-money/CREDITS.md)。*
+
 ![示例：《AI到底有多烧钱》每秒一帧](examples/ai-burn-money/frames_1fps.jpg)
 
-*上图：用这套方法做的示例片《AI到底有多烧钱》（第六版，77 秒），每秒一帧。图中的实拍画面、人物抠像和新闻截图分属各自的版权方，出处见 [examples/ai-burn-money/CREDITS.md](examples/ai-burn-money/CREDITS.md)。*
+*上图：同一条片子，每秒一帧。*
 
 ![示例：四个关键动作的连续帧](examples/ai-burn-money/moves_v6.jpg)
 
@@ -147,7 +151,7 @@ wallstreet-explainer/
 │   ├── review.md            # 交付前自检
 │   └── lessons.md           # 实践中踩过的坑
 ├── scripts/                 # 工具脚本（见上表）
-├── examples/ai-burn-money/  # 示例片：导演表、逐段说明、每秒一帧、动作连续帧、前后两版对比、素材出处
+├── examples/ai-burn-money/  # 示例片：GIF、导演表、逐段说明、每秒一帧、动作连续帧、前后两版对比、素材出处
 ├── requirements.txt
 └── package.json
 ```
