@@ -1,21 +1,26 @@
 # wallstreet-explainer
 
 > 一个给 Claude Code 用的 Skill，用来做**华尔街式的财经 / 科技解读短片**：1–3 分钟，16:9，不需要真人出镜。
-> *A Claude Code skill for making Wall-Street-style finance / tech explainer videos (1–3 min, 16:9, no on-camera host): real news, real people and official footage as evidence; a graphic stage — glass discs, big numbers, clean charts — that acts out the money and the relationships; every shot picks up something from the previous one.*
+> *A Claude Code skill for making Wall-Street-style finance / tech explainer videos (1–3 min, 16:9, no on-camera host): real news, real people and official footage as evidence; cut-outs of the people in the story stand in for a host (in front of giant type, backgrounds swapping behind them); a layered 2.5D stage — glass discs, big numbers, clean charts — where the camera, not the elements, does the moving; every shot picks up something from the previous one.*
 
 ![示例：《AI到底有多烧钱》每秒一帧](examples/ai-burn-money/frames_1fps.jpg)
 
-*上图：用这套方法做的示例片《AI到底有多烧钱》（77 秒），每秒一帧。图中的实拍画面和新闻截图分属各自的版权方，出处见 [examples/ai-burn-money/CREDITS.md](examples/ai-burn-money/CREDITS.md)。*
+*上图：用这套方法做的示例片《AI到底有多烧钱》（第六版，77 秒），每秒一帧。图中的实拍画面、人物抠像和新闻截图分属各自的版权方，出处见 [examples/ai-burn-money/CREDITS.md](examples/ai-burn-money/CREDITS.md)。*
+
+![示例：四个关键动作的连续帧](examples/ai-burn-money/moves_v6.jpg)
+
+*上图：示例片里四个动作的连续帧：镜头沿新闻桌面滑过去；黄仁勋从实拍原位挪进巨字中间；横推换人（带运动模糊）；原文倒成桌面、图表立起来。*
 
 ---
 
 ## 这是什么
 
-这个 skill 教 Claude 怎么拍“讲清一笔大账”的片子。题目可以是巨头一年砸多少钱、估值和收入差多少、钱在几家公司之间怎么转了一圈。它包括三样东西：
+这个 skill 教 Claude 怎么拍“讲清一笔大账”的片子。题目可以是巨头一年砸多少钱、估值和收入差多少、钱在几家公司之间怎么转了一圈。它包括四样东西：
 
 1. **设计思路**：每一镜该放什么、为什么放、凭什么接下一镜。这是核心，见 `references/thinking.md`。
-2. **风格语言**：深色织物舞台、厚玻璃圆盘、奶油金的大数字、白底图表、新闻原文加荧光笔……以及它们的具体数值；还有一份开头钩子菜单。
-3. **一套工具脚本**：找片下片、看片挑入点、抽帧、新闻原文截图、临时配音和时间线、逐帧渲染、混音和响度检查。
+2. **动效原理**：从三条同类参考片逐帧量出来的镜头运动——为什么它的慢推、数字滚动、压字不像 PPT、不像 AI；一份手法清单和量化目标。见 `references/motion.md`。
+3. **风格语言**：深色织物舞台、当事人抠像压巨字、厚玻璃圆盘、奶油金的大数字、白底图表、新闻原文加荧光笔……以及它们的具体数值；还有一份开头钩子菜单。
+4. **一套工具脚本**：找片下片、看片挑入点、抽帧、GPU 逐帧抠人、新闻原文截图、临时配音和时间线、逐帧渲染、2.5D 相机小工具、镜头运动自检、混音和响度检查。
 
 **它不是模板。** 仓库里没有一份可以改改文字就出片的工程。每条片的画面都要从它自己的文案和素材里现想；示例片记录的是“怎么想出来的”，不是拿来套的。
 
@@ -26,8 +31,9 @@
 
 - **素材要自己会说话**：画面里要有身份，比如人的脸、logo、新闻标题，静音也能看懂。只有灰屋顶的航拍不行。
 - **每一镜都接住上一镜**：同一个数字从开头带到结尾，人物实拍缩成他代表的圆盘，原文里刷黄的数直接飞进图表。
-- **真实优先**：用官方高清宣传片、新闻原文、当事人原声；生成图只用来做中性纹理。
-- **不廉价**：不慢推，不用 PPT 式入场，不在实拍上压字；大数字用“砸入”，转场做成两个动作交叠。
+- **真实优先**：用官方高清宣传片、新闻原文、当事人原声；当事人的实拍抠像替代主持人；生成图只演拍不到的具体比喻物件，不做电影感氛围大片。
+- **动的是镜头，不是元素自己演**：东西出现得很朴素，大运动交给镜头——在有前后层的舞台里推、拉、摇，去找正在说的那个东西；快的东西带运动模糊。几乎不定住，也不整张平面一起缩放。
+- **每个动作都是内容**：删掉它观众少懂了什么？什么都没少就是装饰。数字只在“累加”时滚；实拍上的字只用“人站在巨字前面”或“实拍压暗退成底”两种压法。
 - **原声要先铺垫**：先说“连某某自己都说：”，再放他的原话。
 - **开头不固定**：每条片按它最强的料（极端的数、反差、当事人一句话、看得见的尺度、悬念……），挑 3 个机制不同的钩子做粗剪给你选。不管选哪个，0.5 秒内开口，第一句说完就进正题。
 
@@ -55,6 +61,7 @@ git clone https://github.com/HeyChengC/wallstreet-explainer.git <项目>/.claude
 | Python 3.10+ | 脚本 | `pip install -r requirements.txt` |
 | Node.js 18+ 和 Playwright | 逐帧渲染、新闻截图 | 在 skill 目录下 `npm install` 然后 `npx playwright install chromium` |
 | faster-whisper（可选） | 换成正式配音后逐字对齐；给原声找词的时间 | `pip install faster-whisper`（有 NVIDIA 显卡会快很多） |
+| onnxruntime-gpu + 抠像模型（可选） | 当事人逐帧抠像（`matte.py`） | `pip install "onnxruntime-gpu[cuda,cudnn]" rembg`，再 `python -c "from rembg import new_session; new_session('isnet-general-use')"` 下载模型；没有 NVIDIA 显卡装 `onnxruntime`（慢很多） |
 
 Playwright 装在别处也可以：设环境变量 `PLAYWRIGHT_FROM=<装了 playwright 的那个 package.json 的路径>`，或者在 `scripts/local.json` 里写 `{"playwright_from": "..."}`。
 
@@ -114,7 +121,12 @@ Claude 会按下面的流程走，**每一站都停下来让你确认**，审美
 | `footage.py wave` | 看原声剪口的响度：开口、句尾、数字静音、爆音 | `... wave quote.m4a 17.8 19.2` |
 | `snap_news.mjs` | 新闻原文截图，并量出关键词的框（画荧光笔用） | `node scripts/snap_news.mjs jobs.json` |
 | `temp_voice.py` | 临时配音和时间线；`--asr` 换正式配音后重新对齐 | `python scripts/temp_voice.py film/script.json` |
+| `matte.py` | 实拍逐帧抠人，提示藏着的切点 | `python scripts/matte.py film/assets/clips/ceo film/assets/cut/ceo --from 12` |
+| `matte_clean.py` | 抠像去零碎、抹掉贴着的椅背、写出每帧头肩中心 | `python scripts/matte_clean.py film/assets/cut/ceo --cut-left 0.16` |
+| `stage25d.js` | 页面里用的小工具：分层相机、运动模糊、景深、抠像跟人、巨字、眉题 | 拷进片子目录，先于 film.js 载入，用 `window.S25` |
 | `render.mjs` | 逐帧渲染：看帧、渲一段、出成片 | `node scripts/render.mjs --dir film --video --h 720 --range 0:18` |
+| `strip.py` | 连续帧拼图：一个动作 8 张，查穿帮、拆参考片 | `python scripts/strip.py film/out/visual_720.mp4 15.8 16.9 8 out.jpg` |
+| `motion_check.py` | 镜头运动自检，和参考片的区间比 | `python scripts/motion_check.py v6.mp4 v5.mp4` |
 | `mix.py` | 配音、原声、音效、配乐混到 -14 LUFS；`--check` 量各段响度 | `python scripts/mix.py film --check` |
 
 渲染器要求片子的页面暴露 `window.ready` 和 `window.seek(t)`，同一个 t 永远画出同一帧。片子怎么搭见 `SKILL.md` 最后一节。
@@ -126,6 +138,7 @@ wallstreet-explainer/
 ├── SKILL.md                 # Claude 读的入口：流程、读哪份、工具、片子怎么搭
 ├── references/
 │   ├── thinking.md          # 设计思路（核心）
+│   ├── motion.md            # 动效原理：为什么不像 PPT/AI、手法清单、量化目标
 │   ├── style.md             # 风格语言和具体数值
 │   ├── grammar.md           # 镜头怎么接、运镜和动作的手感
 │   ├── opening.md           # 开头：钩子菜单，以及怎么出 3 个选项
@@ -134,7 +147,7 @@ wallstreet-explainer/
 │   ├── review.md            # 交付前自检
 │   └── lessons.md           # 实践中踩过的坑
 ├── scripts/                 # 工具脚本（见上表）
-├── examples/ai-burn-money/  # 示例片：导演表、逐段说明、每秒一帧、素材出处
+├── examples/ai-burn-money/  # 示例片：导演表、逐段说明、每秒一帧、动作连续帧、前后两版对比、素材出处
 ├── requirements.txt
 └── package.json
 ```

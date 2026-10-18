@@ -1,6 +1,6 @@
 # 示例片《AI到底有多烧钱》素材出处
 
-示例片是一条评论、解读性质的短片，下面列出片中用到的全部第三方素材。`frames_1fps.jpg` 里出现的实拍画面、新闻截图、logo 和人物照片**版权归各自所有者**，不在本仓库的 MIT 授权范围内。
+示例片是一条评论、解读性质的短片，下面列出片中用到的全部第三方素材。`frames_1fps.jpg`、`moves_v6.jpg`、`v5b_vs_v6.jpg` 里出现的实拍画面、人物抠像、新闻截图、logo 和人物照片**版权归各自所有者**，不在本仓库的 MIT 授权范围内。
 
 ## 数据来源
 
@@ -32,9 +32,11 @@
 |---|---|---|
 | 芯片（晶圆）、算力（机柜） | Building the Blackwell NVL72 | NVIDIA 官方 — <https://www.youtube.com/watch?v=YsiccpVKUIs> |
 | 数据中心走廊 | Inside a Google Cloud TPU Data Center | Google Cloud 官方 — <https://www.youtube.com/watch?v=FsxthdQ_sL4> |
-| 黄仁勋（发布会） | NVIDIA GTC 2026 Keynote with Jensen Huang Highlights | NVIDIA 官方 — <https://www.youtube.com/watch?v=kDd24YOeqQQ> |
-| Sam Altman 采访 | Inside OpenAI's Stargate Megafactory with Sam Altman | Bloomberg Originals — <https://www.youtube.com/watch?v=GhIJs4zbH0o> |
-| 星门工地 | Building the Future of AI Infrastructure with Oracle: Abilene, TX | Oracle 官方 — <https://www.youtube.com/watch?v=WkkgqXrg-Xg> |
+| 黄仁勋（发布会；第六版里逐帧抠出来，站在“5.2 万亿”“全球第一”前面） | NVIDIA GTC 2026 Keynote with Jensen Huang Highlights | NVIDIA 官方 — <https://www.youtube.com/watch?v=kDd24YOeqQQ> |
+| Sam Altman 采访（第六版里逐帧抠出来，站在“8520 亿”前面） | Inside OpenAI's Stargate Megafactory with Sam Altman | Bloomberg Originals — <https://www.youtube.com/watch?v=GhIJs4zbH0o> |
+| 片名底下的数据中心快剪：微软 Fairwater 工地 | Microsoft Fairwater AI Data Center Construction, Mt Pleasant, WI | Aeroworks Productions — <https://www.youtube.com/watch?v=dx1vrbGIbYw> |
+| 片名底下的数据中心快剪：Meta 数据中心 | Meta’s $200 Billion Bet on a Remote Data Center | Bloomberg Television — <https://www.youtube.com/watch?v=VV9Y8IYS9W4> |
+| 星门工地（算力那一镜的底、片名快剪） | Building the Future of AI Infrastructure with Oracle: Abilene, TX | Oracle 官方 — <https://www.youtube.com/watch?v=WkkgqXrg-Xg> |
 | 英伟达投资 OpenAI（新闻条） | Nvidia CEO on the $100 billion investment in OpenAI | CNBC Television — <https://www.youtube.com/watch?v=NACzbWykuOA> |
 | 黄仁勋原声“The more you buy, the more you save” | Computex 2023 主题演讲片段（剪辑版） | <https://www.youtube.com/watch?v=aD1sQjt7Yks> |
 | 扎克伯格原声“misspending a couple of hundred billion dollars…” | Mark Zuckerberg on the AI bubble（约 01:11:49 起） | Sources Podcast（Alex Heath）— <https://www.youtube.com/watch?v=23FyskyFoP8> |
