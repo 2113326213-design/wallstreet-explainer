@@ -102,3 +102,11 @@ npm install && npx playwright install chromium
 ## License
 
 代码和文档是 MIT，见 [LICENSE](LICENSE)。样片里的第三方画面、截图、logo 和人物不在 MIT 范围内，归各自的所有者。
+
+## 联系
+
+微信号 Yangdavee，备注来意。
+
+## 友情链接
+
+https://linux.do/
