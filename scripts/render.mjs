@@ -4,6 +4,8 @@
 //   node render.mjs --dir film --video --h 720            # 预览整片（out/visual_720.mp4，无声）
 //   node render.mjs --dir film --video --h 720 --range 0:18   # 只渲一段（out/visual_720_range.mp4）
 //   node render.mjs --dir film --video --h 1080           # 成片画面
+//   node render.mjs --dir film --moves [--prev 上一条/out/moves.json]   # 手法用量：每镜用了哪些手法、有没有连着用、和上一条片像不像（out/moves.json）
+//   --page index2.html 换一个入口页；--out 目录 换输出目录（默认 <dir>/out）
 // 页面要求：seek 是确定的（同一个 t 永远画出同一帧，不依赖播放时间、不用 CSS 动画），并且 await 图片解码与字体。
 import fs from 'node:fs/promises'; import path from 'node:path'; import http from 'node:http';
 import {spawn} from 'node:child_process'; import {once} from 'node:events';
@@ -20,8 +22,8 @@ function loadPlaywright() {
   throw new Error('找不到 playwright：npm i playwright，或在 scripts/local.json 写 playwright_from 指向装了它的 package.json');
 }
 const {chromium} = loadPlaywright();
-const here = path.resolve(arg('--dir') ?? '.');
-const H = Number(arg('--h') ?? 720), Wd = Math.round(H * 16 / 9), out = path.join(here, 'out');
+const here = path.resolve(arg('--dir') ?? '.'), PAGE = arg('--page') ?? 'index.html';
+const H = Number(arg('--h') ?? 720), Wd = Math.round(H * 16 / 9), out = arg('--out') ? path.resolve(arg('--out')) : path.join(here, 'out');
 await fs.mkdir(out, {recursive: true});
 const T = JSON.parse(await fs.readFile(path.join(here, 'timeline.json'), 'utf8'));
 const mime = {'.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json',
@@ -37,16 +39,60 @@ if (!worker) {
 }
 async function page() {
   const b = await chromium.launch({args: ['--force-color-profile=srgb', '--disable-lcd-text']});
-  const p = await b.newPage({viewport: {width: Wd, height: H}}); const errs = [];
-  p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
+  const p = await b.newPage({viewport: {width: Wd, height: H}}); const errs = [], warns = [];
+  p.on('pageerror', e => errs.push(e.message));
+  p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); else if (m.type() === 'warning' && m.text().startsWith('[moves]')) warns.push(m.text()); });
   p.on('requestfailed', q => errs.push('请求失败 ' + q.url())); p.on('response', s => { if (s.status() >= 400) errs.push(s.status() + ' ' + s.url()); });
-  await p.goto(`http://127.0.0.1:${port}/index.html`); await p.evaluate(() => window.ready);
-  return {b, p, errs};
+  await p.goto(`http://127.0.0.1:${port}/${PAGE}`);
+  try { await p.evaluate(() => window.ready); }
+  catch (e) { console.error('页面没准备好：', e.message.split('\n')[0], [...new Set(errs)].slice(0, 8)); await b.close(); process.exit(3); }
+  return {b, p, errs, warns};
 }
 if (arg('--stills')) {
-  const {b, p, errs} = await page(); const ts = arg('--stills').split(',').map(Number);
+  const {b, p, errs, warns} = await page(); const ts = arg('--stills').split(',').map(Number);
   for (const t of ts) { await p.evaluate(t => window.seek(t), t); await p.screenshot({path: path.join(out, `still_${t.toFixed(2)}.png`)}); }
-  await b.close(); server.close(); if (errs.length) console.log('页面报错（先修再看帧）：', [...new Set(errs)].slice(0, 8)); console.log('stills', ts.length); process.exit(0);
+  await b.close(); server.close(); if (errs.length) console.log('页面报错（先修再看帧）：', [...new Set(errs)].slice(0, 8));
+  if (warns.length) console.log([...new Set(warns)].join('\n')); console.log('stills', ts.length); process.exit(0);
+}
+// ---------- 手法用量（moves.js 记下的） ----------
+const TRANS = new Set(['pushSwap', 'pushThrough', 'blurToBase', 'frameFill']);   // 进场的转场
+function lcs(a, b) { const d = Array.from({length: a.length + 1}, () => new Array(b.length + 1).fill(0));
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = a[i - 1] === b[j - 1] ? d[i - 1][j - 1] + 1 : Math.max(d[i - 1][j], d[i][j - 1]);
+  return d[a.length][b.length]; }
+function movesReport({log, shots}) {
+  const order = [...shots.keys()].sort((a, b) => shots[a][0] - shots[b][0]), by = new Map();
+  for (const e of log) { if (!by.has(e.shot)) by.set(e.shot, []); by.get(e.shot).push(e); }
+  for (const es of by.values()) es.sort((a, b) => a.t - b.t);
+  const uses = k => by.get(k) ?? [];
+  console.log('镜   时间            用了哪些手法（why）');
+  order.forEach((k, i) => console.log(`${String(i + 1).padStart(2)}  ${shots[k][0].toFixed(1).padStart(5)}–${shots[k][1].toFixed(1).padEnd(6)}  ${uses(k).length ? uses(k).map(e => `${e.move}（${e.why || '没写 why'}）`).join('；') : '手写'}`));
+  const flags = [];
+  for (let i = 1; i < order.length; i++) { const a = uses(order[i - 1]).map(e => e.move);
+    for (const e of uses(order[i])) if (TRANS.has(e.move) && a.includes(e.move)) flags.push(`第 ${i}、${i + 1} 镜连着用 ${e.move} 进场：同一种接法连用，观众会看出套路`); }
+  for (const m of new Set(log.map(e => e.move))) { let r = 0, prev = false;
+    for (const k of order) { const on = uses(k).some(e => e.move === m); if (on && !prev) r++; prev = on; }
+    if (r >= 3) flags.push(`${m} 用了 ${r} 段：每一处的意思都对得上吗？对不上的改成手写`); }
+  const nowhy = log.filter(e => !e.why); if (nowhy.length) flags.push(`${nowhy.length} 处没写 why（${[...new Set(nowhy.map(e => e.move))].join('、')}）：说不出这一下在说什么，就别用`);
+  const lib = order.filter(k => by.has(k)).length;
+  console.log(`\n${order.length} 镜：${lib} 镜用了手法库，${order.length - lib} 镜全手写`);
+  if (order.length >= 8 && lib === order.length) flags.push('没有一镜是手写的：检查有没有为了套手法去改画面');
+  const seq = order.flatMap(k => uses(k).map(e => e.move));
+  if (arg('--prev')) { const pv = JSON.parse(fsSync.readFileSync(arg('--prev'), 'utf8')).seq ?? [], m = Math.min(seq.length, pv.length), r = m ? lcs(seq, pv) / m : 0;
+    console.log(`和上一条片的手法顺序重合 ${(r * 100).toFixed(0)}%`);
+    if (m >= 5 && r >= .6) flags.push(`手法顺序和上一条片重合 ${(r * 100).toFixed(0)}%：镜头是不是照着上一条排的？`); }
+  fsSync.writeFileSync(path.join(out, 'moves.json'), JSON.stringify({seq, log, shots}, null, 1));
+  console.log(flags.length ? '\n要看一眼：\n- ' + flags.join('\n- ') : '\n没有要提醒的。');
+  console.log('过了不等于用对：每一处还要对得上那句话的意思。');
+}
+if (has('--moves')) {
+  const {b, p, errs} = await page();
+  const r = await p.evaluate(async () => { const T = window.timeline, n = Math.ceil(T.duration * 30);
+    for (let f = 0; f < n; f++) await window.seek(f / 30, true);
+    return {log: window.MV?.LOG ?? null, shots: (window.FB?.shots ?? []).map(s => [s.t0, s.t1])}; });
+  await b.close(); server.close();
+  if (errs.length) console.log('页面报错（先修）：', [...new Set(errs)].slice(0, 8));
+  if (!r.log) console.log('页面里没有载入 moves.js，没有可查的手法'); else movesReport(r);
+  process.exit(0);
 }
 const fps = T.fps ?? 30, N = Math.ceil(T.duration * fps);
 if (worker) {
@@ -60,7 +106,7 @@ if (!has('--video')) { console.log('用 --stills 或 --video'); server.close(); 
 const RG = arg('--range'), F0 = RG ? Math.round(Number(RG.split(':')[0]) * fps) : 0, F1 = RG ? Math.min(N, Math.round(Number(RG.split(':')[1]) * fps)) : N;
 const K = Number(arg('--workers') ?? 6), size = Math.ceil((F1 - F0) / K), starts = []; const t0 = Date.now();
 await Promise.all(Array.from({length: K}, (_, i) => { const a = F0 + i * size, z = Math.min(F1, a + size); if (a >= z) return null; starts.push(a);
-  return new Promise((res, rej) => { const c = spawn(process.execPath, [fileURLToPath(import.meta.url), '--dir', here, '--worker', `${a}:${z}`, '--port', String(port), '--h', String(H)], {stdio: 'inherit'}); c.on('exit', x => x === 0 ? res() : rej(new Error('worker ' + a))); }); }));
+  return new Promise((res, rej) => { const c = spawn(process.execPath, [fileURLToPath(import.meta.url), '--dir', here, '--page', PAGE, '--out', out, '--worker', `${a}:${z}`, '--port', String(port), '--h', String(H)], {stdio: 'inherit'}); c.on('exit', x => x === 0 ? res() : rej(new Error('worker ' + a))); }); }));
 starts.sort((a, b) => a - b);
 await fs.writeFile(path.join(out, `list_${H}.txt`), starts.map(s => `file 'seg_${H}_${s}.mp4'`).join('\n'));
 const vout = path.join(out, RG ? `visual_${H}_range.mp4` : `visual_${H}.mp4`);

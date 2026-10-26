@@ -17,6 +17,17 @@ function camPath(t,base,moves=[],drift=.02){
  return {...from,s:from.s*(1+drift*Math.max(0,t-ts))};
 }
 const cams=(fn,t)=>[fn(t),fn(t-1/30)];   // 当前机位和上一帧机位（算运动模糊）
+// 关键帧机位：keys=[[时刻,{x,y,z…}],…]，两点之间两头缓；最后一个点之后按 after（每秒，如 {z:25}）继续慢推。
+// 用在"同一个世界里换机位"：落点就是正在说的那个东西，时刻写成 cue()。
+function camKeys(t,keys,after={}){
+ if(t<=keys[0][0])return {...keys[0][1]};
+ for(let i=0;i<keys.length-1;i++){const [ta,pa]=keys[i],[tb,pb]=keys[i+1];
+  if(t<tb){const k=IO((t-ta)/(tb-ta)),o={};for(const n in pa)o[n]=lerp(pa[n],pb[n]??pa[n],k);return o;}}
+ const [tl,pl]=keys[keys.length-1],o={...pl};for(const n in after)o[n]=(o[n]??0)+(t-tl)*after[n];return o;
+}
+// 3D 桌面：东西摆在一张透视平面上（content 里用 absolute 定位，原点在桌面中心），机位 cam={rx,rz,x,y,z}。
+// o.plane 桌面本身的 HTML（底纹），o.persp(1500)，o.origin 透视中心('50% 28%')
+const desk3d=(cam,content,o={})=>`<div style="position:absolute;inset:0;perspective:${o.persp??1500}px;perspective-origin:${o.origin??'50% 28%'}"><div style="position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;transform:rotateX(${cam.rx}deg) rotateZ(${cam.rz??0}deg) translate3d(${cam.x??0}px,${cam.y??0}px,${cam.z??0}px)">${o.plane??''}${content}</div></div>`;
 
 // 方向运动模糊：按这一层这一帧在屏幕上挪了多少像素挑一档
 const MBK=[3,6,10,16,24,36];
@@ -46,12 +57,12 @@ function cutP(n,f,o){const b=BOX[n];f=Math.max(1,Math.min(b.frames,Math.round(f)
  return `<img src="${b.base}${n}/${String(f).padStart(4,'0')}.png" style="position:absolute;left:${left.toFixed(1)}px;top:${top.toFixed(1)}px;width:${(b.w*sc).toFixed(1)}px;height:${(b.h*sc).toFixed(1)}px;filter:contrast(1.04) saturate(.96)${o.rim?` drop-shadow(0 0 ${o.rimR??60}px ${o.rim})`:''}">`;}
 const halo=(x,y,r,c,o=1)=>`<div style="position:absolute;left:${x-r}px;top:${y-r}px;width:${2*r}px;height:${2*r}px;border-radius:50%;background:radial-gradient(circle,${c} 0%,${c}00 70%);opacity:${o};mix-blend-mode:screen"></div>`;
 
-// 巨字：数字一种字体、汉字一种字体，渐变里压一层颗粒（印刷质感）。o: x,y(顶),size,anchor('l'|'c'|'r'),m:[中段色,底色],s,o,dy,b
+// 巨字：数字一种字体、汉字一种字体，渐变里压一层颗粒（印刷质感）。o: x,y(顶),size,anchor('l'|'c'|'r'),m:[中段色,底色],s,o,dy,b,mbv(方向模糊，mbF 的返回值)
 // 字体名用 CSS 变量 --s25-num / --s25-han（默认 Num / Shu），颗粒图 --s25-grain
 function mega(txt,o){
  const parts=txt.replace(/([0-9.,$−+]+)|([^0-9.,$−+]+)/g,(m,d,h)=>d?`<span class="s25d">${d}</span>`:`<span class="s25h">${h}</span>`);
  const ax=o.anchor==='r'?'100%':o.anchor==='c'?'50%':'0%',tx=o.anchor==='r'?'-100%':o.anchor==='c'?'-50%':'0';
- return `<div class="s25mega" style="left:${o.x}px;top:${o.y}px;font-size:${o.size}px;--m1:${o.m?.[0]??'#f4f1e6'};--m2:${o.m?.[1]??'#b9c2ad'};transform:translate(${tx},${(o.dy??0).toFixed(1)}px) scale(${(o.s??1).toFixed(4)});transform-origin:${ax} 100%;opacity:${C(o.o??1).toFixed(3)};filter:drop-shadow(0 22px 34px #000b)${(o.b??0)>.3?` blur(${o.b.toFixed(1)}px)`:''}">${parts}</div>`;}
+ return `<div class="s25mega" style="left:${o.x}px;top:${o.y}px;font-size:${o.size}px;--m1:${o.m?.[0]??'#f4f1e6'};--m2:${o.m?.[1]??'#b9c2ad'};transform:translate(${tx},${(o.dy??0).toFixed(1)}px) scale(${(o.s??1).toFixed(4)});transform-origin:${ax} 100%;opacity:${C(o.o??1).toFixed(3)};filter:drop-shadow(0 22px 34px #000b)${(o.b??0)>.3?` blur(${o.b.toFixed(1)}px)`:''}${o.mbv?` ${o.mbv}`:''}">${parts}</div>`;}
 // 眉题：一行中文 + 可选一行英文小字（一帧最多一组）
 const brow=(x,y,zh,en,o={})=>`<div class="s25brow" style="left:${x}px;top:${y}px;opacity:${C(o.o??1).toFixed(3)};transform:translateX(${o.anchor==='c'?'-50%':o.anchor==='r'?'-100%':'0'});text-align:${{c:'center',r:'right'}[o.anchor]??'left'}"><b>${zh}</b>${en?`<i>${en}</i>`:''}</div>`;
 // 实拍退成底（字是主角时）：压暗、去色、略虚
@@ -65,5 +76,5 @@ const css=`.s25mega{position:absolute;white-space:nowrap;line-height:.8;display:
 .s25brow{position:absolute;white-space:nowrap}.s25brow b{display:block;font:44px var(--s25-han,Shu);letter-spacing:10px;color:#f1ead2;text-shadow:0 3px 12px #000b}
 .s25brow i{display:block;font:600 17px Montserrat,sans-serif;letter-spacing:7px;color:#ffffff8a;margin-top:10px;font-style:normal}`;
 const st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
-window.S25={C,IO,lerp,camPath,cams,DEFS,mbF,L,dof,loadCuts,cutP,halo,mega,brow,demote,fmtB,BOX};
+window.S25={C,IO,lerp,camPath,camKeys,cams,DEFS,mbF,L,dof,desk3d,loadCuts,cutP,halo,mega,brow,demote,fmtB,BOX};
 })();

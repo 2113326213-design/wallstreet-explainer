@@ -8,6 +8,7 @@ sfx.json：
 {
   "dir": "../sfx",                          # 音效文件目录（相对 film/）
   "bed": {"file": "bed.mp3", "gain": -13, "from_pre": true, "lift_title": 1.9},   # 配乐：被人声压低；片名期间抬高
+                                            # 也可以 "at": ["s01","？"], "shift": 0.14, "fade_in": 0.12 —— 卡在反转那一下才进
   "events": [
     {"file": "impact_soft.mp3", "at": ["s01", "七千"], "shift": -0.05, "peak": -13, "len": 2.5},   # 卡在某句某个词上
     {"file": "flip.mp3", "t": 0.5, "peak": -20, "len": 0.3}                                      # 或直接写秒
@@ -65,12 +66,13 @@ flt.append('[vmain]aformat=channel_layouts=stereo,volume=2dB[vv]')
 if sl: flt.append(''.join(sl) + f'amix=inputs={len(sl)}:normalize=0[sfx]'); mix.append('[sfx]')
 bed = X.get('bed')
 if bed:
-    off = PRE if bed.get('from_pre', True) else 0.0; L = DUR - off
+    # 配乐从哪进：at=[句,词]（+shift）卡在某个字上；否则 from_pre 决定从 pre 还是 0 秒
+    off = max(0, cue(*bed['at']) + bed.get('shift', 0)) if 'at' in bed else PRE if bed.get('from_pre', True) else 0.0; L = DUR - off
     ts, te = (T['title']['start'] - off, T['title']['end'] - off) if T.get('title') else (-9, -9)
     up = f"if(between(t,{ts - .3:.2f},{te + .1:.2f}),{bed.get('lift_title', 1.9)},1)"
     ins += ['-stream_loop', '-1', '-i', str(SF / bed['file'])]
     flt.append(f"[{n}:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{L:.3f},volume={bed.get('gain', -13)}dB,volume='{up}':eval=frame,"
-               f"afade=t=in:d=0.6,afade=t=out:st={L - 1.4:.2f}:d=1.4,adelay={int(off * 1000)}|{int(off * 1000)}[m0]"); n += 1
+               f"afade=t=in:d={bed.get('fade_in', .6)},afade=t=out:st={L - 1.4:.2f}:d=1.4,adelay={int(off * 1000)}|{int(off * 1000)}[m0]"); n += 1
     flt.append('[vkey]aformat=channel_layouts=stereo[key]')
     flt.append('[m0][key]sidechaincompress=threshold=0.06:ratio=3:attack=60:release=450:makeup=1[music]'); mix.append('[music]')
 else:

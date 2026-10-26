@@ -70,7 +70,7 @@ npm install && npx playwright install chromium
 - yt-dlp 和 edge-tts 隔一阵会被 403，`pip install -U` 一下就好。
 - 抠人要装 `onnxruntime-gpu`（有 N 卡）或者 `onnxruntime`，再用 rembg 把模型下下来：`python -c "from rembg import new_session; new_session('isnet-general-use')"`。
 - 换配音以后逐字对齐要 faster-whisper，有 N 卡快很多。
-- 字体不随仓库给，要自己下：字幕 MiSans，标签和片名阿里妈妈数黑体，大数字 Bebas Neue，兜底 Noto Sans SC。字幕里的英文和数字我用的 Century Gothic Italic，这个是商业字体，可以换成 URW Gothic 或者 Questrial。
+- 字体不随仓库给，要自己下：字幕 MiSans，标签和片名阿里妈妈数黑体，大数字 Bebas Neue，英文小标 Montserrat，兜底 Noto Sans SC。文件名要和 `starter/film.css` 里写的对上。字幕里的英文和数字我用的 Century Gothic Italic，这个是商业字体，可以换成 URW Gothic 或者 Questrial。
 - Playwright 装在别的地方，设个环境变量 `PLAYWRIGHT_FROM` 指过去就行。
 
 ## 里面有什么
@@ -85,13 +85,18 @@ npm install && npx playwright install chromium
 | `snap_news.mjs` | 截新闻原文，量出关键词的位置，用来画高亮 |
 | `temp_voice.py` | 临时配音和时间线，换正式配音后重新对齐 |
 | `matte.py`、`matte_clean.py` | 把视频里的人一帧一帧抠出来 |
+| `matte_despill.py` | 去掉抠像边上原片背景的色边（比如蓝幕反光） |
 | `stage25d.js` | 镜头、景深、运动模糊、大字这些小工具 |
-| `render.mjs` | 一帧一帧渲染成视频 |
+| `film_base.js` | 底座：读时间线、按字取时刻、登记镜头、字幕，每条片都一样 |
+| `moves.js` | 手法库：横推换人、人身后换背景、画框推满屏这些磨过的动作，只管怎么动，画面每条片自己写 |
+| `render.mjs` | 一帧一帧渲染成视频；`--moves` 列出每一镜用了哪些手法 |
 | `strip.py` | 把一个镜头动作拼成连续帧，看有没有穿帮 |
 | `motion_check.py` | 量一下画面是不是太"死" |
 | `mix.py` | 配音、原声、音效、配乐混在一起 |
 
-`examples/ai-burn-money/` 是样片的文案、导演表，还有每一段为什么这么拍。
+`starter/` 是新片的起点，只有底座，没有镜头。
+
+`examples/ai-burn-money/` 是样片的文案、导演表、画面代码，还有每一段为什么这么拍。
 
 ## 素材和版权
 

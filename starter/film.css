@@ -1,0 +1,15 @@
+/* 字体自己下好放进 fonts/（哪几款、去哪下见 README）；字号、颜色见 references/style.md */
+@font-face{font-family:Num;src:url(fonts/BebasNeue-Regular.ttf)}
+@font-face{font-family:Shu;src:url(fonts/AlimamaShuHeiTi-Bold.ttf)}
+@font-face{font-family:Mi;src:url(fonts/MiSans-Medium.otf);font-weight:500}
+@font-face{font-family:Mi;src:url(fonts/MiSans-Semibold.otf);font-weight:600}
+@font-face{font-family:Mont;src:url(fonts/Montserrat.ttf);font-weight:100 900}
+@font-face{font-family:GeoI;src:url(fonts/GOTHICI.TTF)}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;transform-origin:0 0;background:#06070a;font-family:Mi,sans-serif;color:#fff;--s25-grain:url(assets/grain.png)}
+#stage *{box-sizing:border-box}
+.L{position:absolute}
+.full{position:absolute;inset:0}
+/* 字幕：底部居中一行，整句短语替换（film_base.js 负责拆句） */
+.sub{position:absolute;left:0;right:0;top:936px;z-index:90;text-align:center;font-family:Mi;font-weight:500;font-size:60px;letter-spacing:2px;color:#fff;text-shadow:0 2px 6px #000b,0 0 18px #0007}
+.sub .lat{font-family:GeoI,sans-serif;font-size:.96em;letter-spacing:1px;margin:0 .06em}
