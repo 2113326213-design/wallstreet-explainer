@@ -2,6 +2,14 @@
 
 本目录收录适合财经解读视频的素材。音效来自 [Wyzowl SFX Kit](https://github.com/wyzowl/sfx-kit)，作者标明为 CC0 1.0，可免费用于商业及非商业作品并分享；音频并非本项目 MIT 代码许可证的一部分。以下用途是选片建议，制作时请试听并根据画面调整音量。
 
+## 完整音效库：320 个声音
+
+本目录另附 `collection-01.zip` 至 `collection-12.zip` 十二个分包，合计 320 个 WAV 音效，涵盖 28 类，包括转场、撞击、数据、界面、键盘、机械和拟音。文件来自 [Wyzowl SFX Kit](https://github.com/wyzowl/sfx-kit)，授权为 CC0 1.0，可用于商业和非商业作品并分享。早先收录的 14 个精选音效属于这 320 个之中，并非额外的 14 种。
+
+下载全部十二个压缩包，在同一个文件夹分别解压；它们会共同组成 `sfx-kit/` 文件夹。`sfx-kit/sounds/` 按类型分类，`sfx-kit/catalogue.md` 为完整目录，`sfx-kit/sounds.json` 包含每个声音的用途、时长和同步点。第一个压缩包还含原作者指南及 CC0 授权文本。选择时请根据画面试听；这是一套覆盖常见用途的音效，并非按使用量统计的热门排行。
+
+本地 Skill 副本中已有解压好的 `sfx-kit/`。若 film 与 audio-library 同级，可在 `film/sfx.json` 设置 `"dir": "../audio-library"`，然后以 `"file": "sfx-kit/sounds/whooshes/whoosh-fast-soft.wav"` 等路径引用。将音效的开始时间设为画面动作时间减去对应的 `sync.at`；`mix.py` 不会自动读取同步点，并且负时间会被截为零。
+
 ## 音效
 
 | 文件 | 建议用途 | 同步点（秒） |
