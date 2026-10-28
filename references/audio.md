@@ -30,6 +30,8 @@ python scripts/temp_voice.py film/script.json --asr
 
 ## 音效和配乐
 
+项目内的 `audio-library/` 包含 CC0 音效和配乐。优先查阅其中的 README，按画面选择并试听，使用记录的同步点与来源；`film/sfx.json` 中设置音频目录后交给 `scripts/mix.py` 混音。
+
 音效只跟画面里的动作走，一个动作一声，同一时刻只留一个。实践中验证过的口味：
 - 镜头沿桌面滑过去、摇去找下一个：很轻的 whoosh。
 - 横推换人、画框甩进来、推近画框：电影感的快 whoosh。
